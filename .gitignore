@@ -1,0 +1,30 @@
+# --- .NET Core ---
+bin/
+obj/
+.vs/
+appsettings.Development.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# --- Go ---
+/bin/
+/pkg/
+*.exe
+*.exe~
+*.dll
+
+# --- Java ---
+*.class
+*.log
+*.jar
+target/
+.idea/
+
+# --- OS & IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
