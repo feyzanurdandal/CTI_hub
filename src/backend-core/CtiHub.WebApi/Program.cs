@@ -2,15 +2,75 @@ using CtiHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore; // Entity Framework (ORM) araçları
 using CtiHub.Application.Common.Interfaces; //  (Interface) burada
 using CtiHub.Infrastructure.Repositories;   //  (Implementation) burada
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
 
 // "Builder" nesnesi, uygulamayı inşa etmeye yarar
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SERVİSLER --- (DEPENDENCY INJECTION Kısımları) : uygulamanın ihtiyacı olacak her şey burada
 builder.Services.AddControllers(); // Controller mekanizmasını (API) ekle.
+
+// --- JWT AUTHENTICATION AYARLARI ---
+// 1. Ayarları appsettings.json'dan oku
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"];
+
+// 2. Sisteme "Biz JWT kullanacağız" de.
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    // 3. Token doğrulama kuralları
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true, // Kartı kim bastı? (Biz mi?)
+        ValidateAudience = true, // Kart kime verildi?
+        ValidateLifetime = true, // Kartın süresi doldu mu?
+        ValidateIssuerSigningKey = true, // İmza (Mühür) doğru mu?
+        
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
+    };
+});
+
 // Swagger (API Dokümantasyonu) için gerekli servisler.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// --- SWAGGER AYARLARI (Kilit Butonu İçin) ---
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "CtiHub.WebApi", Version = "v1" });
+
+    // 1. Kilit butonunu tanımlıyoruz
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Lütfen kutuya 'Bearer <token>' şeklinde token yapıştırın",
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey
+    });
+
+    // 2. Kilit gereksinimini ekliyoruz
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+       {
+         new OpenApiSecurityScheme
+         {
+           Reference = new OpenApiReference
+           {
+             Type = ReferenceType.SecurityScheme,
+             Id = "Bearer"
+           }
+          },
+          new string[] { }
+       }
+    });
+});
 
 // VERİTABANI BAİLANTISI (Dependency Injection)
 // Uygulamaya diyoruz ki: "Veritabanı olarak PostgreSQL kullanacaksın."
@@ -44,7 +104,10 @@ if (app.Environment.IsDevelopment())
 // HTTP isteklerini HTTPS'e yönlendir (Güvenlik).
 app.UseHttpsRedirection();
 
-// Yetkilendirme (İleride Login yapınca burası devreye girecek).
+// Önce kimlik sor (Authentication)
+app.UseAuthentication(); 
+
+// Sonra yetkisine bak (Authorization)
 app.UseAuthorization();
 
 // Gelen isteği ilgili Controller'a yönlendir (Rotayı bul).

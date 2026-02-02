@@ -1,6 +1,7 @@
 using CtiHub.Application.Common.Interfaces;
 using CtiHub.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CtiHub.WebApi.Controllers;
 
@@ -8,6 +9,7 @@ namespace CtiHub.WebApi.Controllers;
 // [ApiController]: Bu sınıfın bir API olduğunu belirtir (Otomatik validasyon vb. sağlar).
 [Route("api/[controller]")]
 [ApiController]
+[Authorize] // <--- İŞTE BU SATIR KAPIYI KİLİTLER! 🔒
 public class UsersController : ControllerBase
 {
     // 1. ADIM: Garsonumuzu (Repository) tanımlıyoruz.
