@@ -74,4 +74,25 @@ public class UsersController : ControllerBase
         // 3. Sonuç Dön
         return Ok(new { message = "Kullanıcı başarıyla oluşturuldu", userId = newUser.Id });
     }
+
+    // DELETE: api/users/{id}
+    // Örnek kullanım: api/users/b960d14c-bb39...
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        // 1. Önce silinecek kullanıcı gerçekten var mı diye bak.
+        var user = await _userRepository.GetByIdAsync(id);
+        
+        // Eğer yoksa "Bulunamadı" (404) hatası dön.
+        if (user == null)
+        {
+            return NotFound(new { message = "Silinecek kullanıcı bulunamadı." });
+        }
+
+        // 2. Varsa garsona "Bunu sil" de.
+        await _userRepository.DeleteAsync(user);
+
+        // 3. İşlem başarılı mesajı dön.
+        return Ok(new { message = "Kullanıcı başarıyla silindi." });
+    }
 }
