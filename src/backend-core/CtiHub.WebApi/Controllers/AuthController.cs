@@ -35,7 +35,9 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Email veya şifre hatalı!" });
         }
 
-        if (user.PasswordHash != request.Password)
+        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+
+        if (!isPasswordValid)
         {
             return Unauthorized(new { message = "Email veya şifre hatalı!" });
         }

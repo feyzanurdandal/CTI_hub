@@ -52,8 +52,13 @@ public class UsersController : ControllerBase
 
     // POST: api/users
     [HttpPost]
+    [AllowAnonymous] // <-- DİKKAT: Kayıt olurken Token sorulmaz, herkes kayıt olabilir!
     public async Task<IActionResult> Create(CtiHub.Application.DTOs.CreateUserDto request) // Değişen Kısım: User yerine CreateUserDto
     {
+        // Şifreyi Hash'le (Kriptola)
+        // "request.Password" (sifreeee) --> "$2a$11$..." şekline döner.
+        string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
         // 1. DTO'yu Entity'e Çevir (Mapping)
         // İleride bunu AutoMapper ile tek satırda yapacağız, şimdilik elle yapalım mantığı anla.
         var newUser = new User
@@ -61,8 +66,7 @@ public class UsersController : ControllerBase
             Id = Guid.NewGuid(),
             Username = request.Username,
             Email = request.Email,
-            // NOT: Şifreyi asla düz metin (plain text) saklamamalıyız ama şimdilik böyle kalsın.
-            PasswordHash = request.Password, 
+            PasswordHash = passwordHash, 
             FirstName = request.FirstName,
             LastName = request.LastName,
             CreatedAt = DateTime.UtcNow,

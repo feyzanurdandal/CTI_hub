@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using FluentValidation.AspNetCore;
 
 // "Builder" nesnesi, uygulamayı inşa etmeye yarar
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SERVİSLER --- (DEPENDENCY INJECTION Kısımları) : uygulamanın ihtiyacı olacak her şey burada
-builder.Services.AddControllers(); // Controller mekanizmasını (API) ekle.
+ // Controller mekanizmasını (API) ekle.
+builder.Services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
 
 // --- JWT AUTHENTICATION AYARLARI ---
 // 1. Ayarları appsettings.json'dan oku

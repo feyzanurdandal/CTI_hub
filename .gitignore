@@ -1,30 +1,74 @@
-# --- .NET Core ---
+# ==========================================
+# CTI-HUB GÜVENLİK VE SECRETS (KRİTİK)
+# ==========================================
+# Hassas verileri içeren konfigürasyon dosyaları asla GitHub'a gitmemeli.
+appsettings.json
+appsettings.Development.json
+*.env
+secrets.json
+*.pfx
+*.p12
+
+# ==========================================
+# .NET (ASP.NET CORE 9.0)
+# ==========================================
 bin/
 obj/
 .vs/
-appsettings.Development.json
+.library/
+_ReSharper*/
+*.user
+*.userosscache
+*.sln.doccache
 
-# --- Python ---
+# ==========================================
+# PYTHON (ANALYSIS MODULE)
+# ==========================================
 __pycache__/
 *.py[cod]
+*$py.class
 venv/
-.env
+ENV/
+.venv
+.pytest_cache/
+.ipynb_checkpoints/
 
-# --- Go ---
+# ==========================================
+# GO (SCANNER MODULE)
+# ==========================================
 /bin/
 /pkg/
+/out/
 *.exe
 *.exe~
 *.dll
+*.so
+*.dylib
+go.sum
 
-# --- Java ---
+# ==========================================
+# JAVA (AGENT MODULE)
+# ==========================================
 *.class
 *.log
 *.jar
+*.war
+*.ear
 target/
 .idea/
+*.iml
 
-# --- OS & IDE ---
+# ==========================================
+# DOCKER
+# ==========================================
+.docker/
+docker-compose.override.yml
+
+# ==========================================
+# OS & IDE SPECIFIC
+# ==========================================
 .DS_Store
 Thumbs.db
 .vscode/
+.history/
+*.swp
