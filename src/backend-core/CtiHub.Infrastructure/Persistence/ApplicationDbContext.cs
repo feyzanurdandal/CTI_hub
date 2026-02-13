@@ -6,20 +6,20 @@ namespace CtiHub.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
-    // Constructor: Ayarları dışarıdan (Program.cs'ten) alır.
+    // Constructor: AyarlarÄ± dÄ±ÅŸarÄ±dan (Program.cs'ten) alÄ±r.
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
-    // Bu listeler veritabanında birer tabloya dönüşecek.
+    // Bu listeler veritabanÄ±nda birer tabloya dÃ¶nÃ¼ÅŸecek.
     public DbSet<User> Users { get; set; }
     public DbSet<Target> Targets { get; set; }
     public DbSet<Scan> Scans { get; set; }
 
-    // SENIOR DOKUNUŞU: SaveChangesAsync metodunu eziyoruz (Override).
-    // Neden? Her kayıt işleminde CreatedAt/UpdatedAt alanlarını elle girmek yerine
-    // burada otomatik dolduruyoruz. Hata yapma riskini sıfırlar.
+    // SENIOR DOKUNUÅŸU: SaveChangesAsync metodunu eziyoruz (Override).
+    // Neden? Her kayÄ±t izleminde CreatedAt/UpdatedAt alanlarÄ±nÄ± elle girmek yerine
+    // burada otomatik dolduruyoruz. Hata yapma riskini sÄ±fÄ±rlar.
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())

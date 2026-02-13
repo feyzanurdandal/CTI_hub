@@ -2,13 +2,13 @@ namespace CtiHub.Domain.Common;
 
 public abstract class BaseEntity
 {
-    // GUID: Benzersiz kimlik. Dağıtık sistemler için int'ten daha güvenli.
+    // GUID: Benzersiz kimlik. DaÄŸÄ±tÄ±k sistemler iÃ§in int'ten daha gÃ¼venli.
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    // Audit (İzleme) Alanları
+    // Audit (izleme) AlanlarÄ±
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
-    // Veriyi gerçekten silmeyiz, sadece "Silindi" işaretleriz (Soft Delete).
+    // Veriyi gerÃ§ekten silmeyiz, sadece "Silindi" iÅŸaretleriz (Soft Delete).
     public bool IsDeleted { get; set; } = false;
 }

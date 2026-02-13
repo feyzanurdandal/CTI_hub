@@ -9,7 +9,7 @@ namespace CtiHub.WebApi.Controllers;
 // [ApiController]: Bu sınıfın bir API olduğunu belirtir (Otomatik validasyon vb. sağlar).
 [Route("api/[controller]")]
 [ApiController]
-[Authorize] // <--- İŞTE BU SATIR KAPIYI KİLİTLER! 🔒
+[Authorize] // <--- İŞTE BU SATIR KAPIYI KİLİTLER! 
 public class UsersController : ControllerBase
 {
     // 1. ADIM: Garsonumuzu (Repository) tanımlıyoruz.
@@ -17,7 +17,7 @@ public class UsersController : ControllerBase
     // Böylece "Ahmet'e" değil "Garson'a" bağlı oluyoruz.
     private readonly IGenericRepository<User> _userRepository;
 
-    // 2. ADIM: CONSTRUCTOR INJECTION (Sihirli Kısım) ✨
+    // 2. ADIM: CONSTRUCTOR INJECTION (Sihirli Kısım) 
     // Biz burada "new GenericRepository()" DEMİYORUZ.
     // Program.cs'e "Biri senden IGenericRepository isterse ver" demiştik ya, işte o burada devreye giriyor.
     // Uygulama çalışınca otomatik olarak buraya o sınıfı gönderiyor.

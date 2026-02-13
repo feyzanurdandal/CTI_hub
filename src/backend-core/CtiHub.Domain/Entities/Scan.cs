@@ -5,18 +5,18 @@ namespace CtiHub.Domain.Entities;
 
 public class Scan : BaseEntity
 {
-    // Hangi hedef taranıyor?
+    // Hangi hedef taranÄ±yor?
     public Guid TargetId { get; set; }
     public Target Target { get; set; } = null!;
 
-    // Tarama durumu (Sırada, Bitti vs.)
+    // Tarama durumu (SÄ±rada, Bitti vs.)
     public ScanStatus Status { get; set; } = ScanStatus.Pending;
 
-    // Tarama ne kadar sürdü?
+    // Tarama ne kadar sÃ¼rdÃ¼?
     public DateTime? StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
 
-    // Go motorundan gelen sonuç buraya yazılacak.
-    // JSON formatında tutacağız.
+    // Go motorundan gelen sonuÃ§ buraya yazÄ±lacak.
+    // JSON formatÄ±nda tutacaÄŸÄ±z.
     public string? ResultJson { get; set; }
 }

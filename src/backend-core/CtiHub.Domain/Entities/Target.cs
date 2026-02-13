@@ -2,16 +2,16 @@ using CtiHub.Domain.Common;
 
 namespace CtiHub.Domain.Entities;
 
-// Hedef: Taranacak site veya IP (örn: google.com)
+// Hedef: Taranacak site veya IP (Ã¶rn: google.com)
 public class Target : BaseEntity
 {
-    public string Name { get; set; } = string.Empty; // Örn: "Müşteri Web Sitesi"
-    public string Host { get; set; } = string.Empty; // Örn: "192.168.1.1"
+    public string Name { get; set; } = string.Empty; // Ã¶rn: "MÃ¼ÅŸteri Web Sitesi"
+    public string Host { get; set; } = string.Empty; // Ã¶rn: "192.168.1.1"
 
-    // İlişki: Bu hedef kime ait?
+    // iliÅŸki: Bu hedef kime ait?
     public Guid UserId { get; set; }
     public User User { get; set; } = null!; // Navigation Property
 
-    // Bu hedefe yapılmış taramaların listesi
+    // Bu hedefe yapÄ±lmÄ±ÅŸ taramalarÄ±n listesi
     public ICollection<Scan> Scans { get; set; } = new List<Scan>();
 }
