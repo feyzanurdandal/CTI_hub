@@ -110,7 +110,7 @@ Bu proje açık kaynaklıdır. Pull Request'ler ve Issue'lar memnuniyetle karş�
 
 **Feyza Nur Dandal** - *Software Engineering Student @ DPÜ*
 
-* 💼 [LinkedIn](https://www.linkedin.com/in/feyza-nur-dandal-7a290720b/) (Buraya kendi linkini ekle)
-* 💻 [GitHub](https://github.com/feyzanurdandal) (Buraya kendi linkini ekle)
+* 💼 [LinkedIn](https://www.linkedin.com/in/feyza-nur-dandal-7a290720b/)
+* 💻 [GitHub](https://github.com/feyzanurdandal)
 
 ---
