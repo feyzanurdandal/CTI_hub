@@ -1,141 +1,95 @@
-using CtiHub.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore; // Entity Framework (ORM) araçları
-using CtiHub.Application.Common.Interfaces; //  (Interface) burada
-using CtiHub.Infrastructure.Repositories;   //  (Implementation) burada
+using CtiHub.Infrastructure; // Bunu unutma
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
+using CtiHub.Infrastructure.Persistence; // Migration için gerekli
+using Microsoft.EntityFrameworkCore;     // Migration için gerekli
 
-// "Builder" nesnesi, uygulamayı inşa etmeye yarar
 var builder = WebApplication.CreateBuilder(args);
 
-// --- SERVİSLER --- (DEPENDENCY INJECTION Kısımları) : uygulamanın ihtiyacı olacak her şey burada
- // Controller mekanizmasını (API) ekle.
-builder.Services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
+// --- 1. SERVİS KAYITLARI (Dependency Injection) ---
 
-// --- JWT AUTHENTICATION AYARLARI ---
-// 1. Ayarları appsettings.json'dan oku
+// Controller ve Validasyon
+builder.Services.AddControllers()
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
+
+// *** TEK SATIRDA TÜM ALTYAPIYI YÜKLE ***
+// (Veritabanı, Repository, RabbitMQ hepsi bunun içinde artık)
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// JWT Ayarları
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"];
-
-// 2. Sisteme "Biz JWT kullanacağız" de.
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    // 3. Token doğrulama kuralları
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true, // Kartı kim bastı? (Biz mi?)
-        ValidateAudience = true, // Kart kime verildi?
-        ValidateLifetime = true, // Kartın süresi doldu mu?
-        ValidateIssuerSigningKey = true, // İmza (Mühür) doğru mu?
-        
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!))
+        };
+    });
 
-// Swagger (API Dokümantasyonu) için gerekli servisler.
+// Swagger Ayarları
 builder.Services.AddEndpointsApiExplorer();
-// --- SWAGGER AYARLARI (Kilit Butonu İçin) ---
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "CtiHub.WebApi", Version = "v1" });
-
-    // 1. Kilit butonunu tanımlıyoruz
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Lütfen kutuya 'Bearer <token>' şeklinde token yapıştırın",
+        Description = "Token giriniz",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey
     });
-
-    // 2. Kilit gereksinimini ekliyoruz
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-       {
-         new OpenApiSecurityScheme
-         {
-           Reference = new OpenApiReference
-           {
-             Type = ReferenceType.SecurityScheme,
-             Id = "Bearer"
-           }
-          },
-          new string[] { }
-       }
+       { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, new string[] { } }
     });
 });
 
-// VERİTABANI BAİLANTISI (Dependency Injection)
-// Uygulamaya diyoruz ki: "Veritabanı olarak PostgreSQL kullanacaksın."
-// Bağlantı cümlesini (Connection String) de appsettings.json'dan veya User Secrets'tan al.
-// Uygulama her "ApplicationDbContext" istendiğinde, bu ayarlarla bir tane üretip verecek.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// --- DEPENDENCY INJECTION (SERVİS KAYITLARI) ---
-// Scoped: Her gelen HTTP isteği (Request) için yeni bir tane oluşturur.
-// "AddScoped" demek: Her HTTP isteği (Request) geldiğinde yeni bir tane üret, istek bitince sil.
-// Anlamı: "Biri senden IGenericRepository isterse, ona GenericRepository ver."
-// typeof(IGenericRepository<>): Generic olduğu için <> içini boş bırakarak "Tüm tipler için geçerli" diyoruz.
-// "typeof" kullanıyoruz çünkü Generic (<T>) bir yapı.
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+// --- DEBUG KODU BAŞLANGICI ---
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"\n\n---------------------------------------------------------");
+Console.WriteLine($" UYGULAMANIN GÖRDÜĞÜ BAĞLANTI ADRESİ: \n{connectionString}");
+Console.WriteLine($"---------------------------------------------------------\n\n");
+// --- DEBUG KODU BİTİŞİ ---
 
-//"Build" diyerek uygulamayı (app) oluşturuyoruz.
 var app = builder.Build();
 
-// --- 5. HTTP İSTEK BORU HATTI (MIDDLEWARE PIPELINE) ---
-// Gelen bir istek (Request) sırasıyla bu kapılardan geçer.
+// --- 2. MIDDLEWARE (Boru Hattı) ---
 
-// Eğer Geliştirme (Development) ortamındaysak Swagger'ı aç.
-// (Canlı ortamda güvenlik için kapatılır).
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();   // Swagger JSON dosyasını oluştur.
-    app.UseSwaggerUI(); // arayüzü göster.
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-// HTTP isteklerini HTTPS'e yönlendir (Güvenlik).
 app.UseHttpsRedirection();
-
-// Önce kimlik sor (Authentication)
-app.UseAuthentication(); 
-
-// Sonra yetkisine bak (Authorization)
+app.UseAuthentication();
 app.UseAuthorization();
-
-// Gelen isteği ilgili Controller'a yönlendir (Rotayı bul).
 app.MapControllers();
 
-// --- OTOMATİK VERİTABANI GÜNCELLEME (AUTO-MIGRATION) ---
-// Uygulama her başladığında çalışacak özel kod bloğumuz.
+// --- 3. AUTO MIGRATION ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Kutudan DbContext'i istiyoruz.
         var context = services.GetRequiredService<ApplicationDbContext>();
-        
-        // Veritabanına bak, eksik tablo varsa oluştur (dotnet ef database update'in kod hali).
-        context.Database.Migrate(); 
-        Console.WriteLine("--> Veritabani basariyla migrate edildi.");
+        context.Database.Migrate();
+        Console.WriteLine("--> Veritabani migration basarili.");
     }
     catch (Exception ex)
     {
-        // Bir hata olursa konsola yaz.
-        Console.WriteLine($"--> Veritabani migration hatasi: {ex.Message}");
+        Console.WriteLine($"--> Migration Hatasi: {ex.Message}");
     }
 }
 
-// --- BAŞLAT ---
-// Uygulamayı çalıştır ve istekleri dinlemeye başla.
 app.Run();

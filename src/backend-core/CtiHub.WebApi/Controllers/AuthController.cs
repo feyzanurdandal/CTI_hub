@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
         {
             return Unauthorized(new { message = "Email veya şifre hatalı!" });
         }
-
+        // Kullanıcının girdiği şifreyi hashleyip DB'deki şifreli haliyle kıyaslar
         bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
 
         if (!isPasswordValid)

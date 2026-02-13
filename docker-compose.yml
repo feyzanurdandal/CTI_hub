@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+# 1. Hizmet: Veritabanı
+  postgres:
+    image: postgres:latest
+    container_name: cti_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # Burası appsettings.json ile aynı olmalı!
+      POSTGRES_DB: CtiHubDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Veriler kaybolmasın diye yedekleme alanı
+    networks:
+      - cti-network
+    restart: always
+
+  rabbitmq:
+  # 2. Hizmet: Mesaj Kuyruğu
+    image: rabbitmq:3-management
+    container_name: cti_rabbitmq
+    ports:
+      - "5672:5672" # Uygulamanın konuşacağı port
+      - "15672:15672" # Senin gireceğin Yönetim Paneli
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - cti-network
+    restart: always
+
+# Ortak Ağ Tanımı (İkisi birbirini görsün diye)
+networks:
+  cti-network:
+    driver: bridge
+
+# Veri Yedekleme Alanı Tanımı
+volumes:
+  postgres_data:
