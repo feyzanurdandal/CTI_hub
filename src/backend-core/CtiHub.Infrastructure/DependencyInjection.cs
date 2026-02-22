@@ -1,4 +1,5 @@
 using CtiHub.Application.Common.Interfaces;
+using CtiHub.Infrastructure.BackgroundJobs;
 using CtiHub.Infrastructure.Persistence;   // DbContext için
 using CtiHub.Infrastructure.Repositories;  // Repositories için
 using CtiHub.Infrastructure.Services;      // RabbitMQService için
@@ -21,6 +22,9 @@ public static class DependencyInjection
 
         // 3. RabbitMQ Servisi
         services.AddScoped<IRabbitMqService, RabbitMqService>();
+
+        // Arka Plan Görevlisini (RabbitMQ Consumer) sisteme ekliyoruz
+        services.AddHostedService<ScanQueueConsumer>();
 
         return services;
     }
