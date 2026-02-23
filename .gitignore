@@ -72,3 +72,5 @@ Thumbs.db
 .vscode/
 .history/
 *.swp
+# Docker secrets
+docker-compose.yml
