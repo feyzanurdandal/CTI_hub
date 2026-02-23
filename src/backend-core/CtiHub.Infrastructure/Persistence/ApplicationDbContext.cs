@@ -17,6 +17,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Target> Targets { get; set; }
     public DbSet<Scan> Scans { get; set; }
 
+    // Tarama kayıtlarını tutacağımız tablo
+    public DbSet<CtiHub.Domain.Entities.ScanRecord> ScanRecords { get; set; }
+
     // SENIOR DOKUNUşU: SaveChangesAsync metodunu eziyoruz (Override).
     // Neden? Her kayıt izleminde CreatedAt/UpdatedAt alanlarını elle girmek yerine
     // burada otomatik dolduruyoruz. Hata yapma riskini sıfırlar.

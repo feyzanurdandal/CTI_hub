@@ -15,6 +15,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
 
+// CORS Politikasını ekliyoruz (Şimdilik her yerden gelen isteklere izin veriyoruz)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // *** TEK SATIRDA TÜM ALTYAPIYI YÜKLE ***
 // (Veritabanı, Repository, RabbitMQ hepsi bunun içinde artık)
 builder.Services.AddInfrastructureServices(builder.Configuration);
@@ -72,6 +83,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// CORS politikasını aktif et (Mutlaka UseAuthorization'dan önce olmalı!)
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

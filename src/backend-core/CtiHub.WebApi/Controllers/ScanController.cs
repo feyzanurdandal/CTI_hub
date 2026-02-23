@@ -1,7 +1,8 @@
 using CtiHub.Application.Common.Interfaces;
 using CtiHub.Application.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using CtiHub.Infrastructure.Persistence; // Veritabanı bağlantısı için eklendi
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CtiHub.WebApi.Controllers;
 
@@ -10,40 +11,38 @@ namespace CtiHub.WebApi.Controllers;
 public class ScanController : ControllerBase
 {
     private readonly IRabbitMqService _rabbitMqService;
+    private readonly ApplicationDbContext _dbContext; // Veritabanı nesnemiz
 
-    // RabbitMQ Servisini buraya çağırıyoruz (Dependency Injection)
-    public ScanController(IRabbitMqService rabbitMqService)
+    // Constructor (Kurucu Metot) - DbContext'i de içeri alıyoruz
+    public ScanController(IRabbitMqService rabbitMqService, ApplicationDbContext dbContext)
     {
         _rabbitMqService = rabbitMqService;
+        _dbContext = dbContext;
     }
 
     [HttpPost("start-scan")]
-    // [Authorize] // Şimdilik kapalı tutalım, test ederken token ile uğraşmayalım
     public async Task<IActionResult> StartScan([FromBody] ScanRequestDto request)
     {
-        // 1. Basit bir validasyon
         if (string.IsNullOrEmpty(request.TargetUrl))
-        {
             return BadRequest("Lütfen bir hedef URL girin.");
-        }
 
-        // 2. Mesajı hazırla (İleride buraya UserID, Tarih vs. de ekleyeceğiz)
-        var message = new 
-        { 
-            Url = request.TargetUrl, 
-            RequestedAt = DateTime.UtcNow,
-            Status = "Pending"
-        };
+        var message = new { Url = request.TargetUrl, RequestedAt = DateTime.UtcNow, Status = "Pending" };
 
-        // 3. RabbitMQ Kuyruğuna Gönder! 🐇
-        // "scan_queue" adında bir kuyruk oluşturup içine atacak.
+        // Mesajı kuyruğa gönder
         await _rabbitMqService.SendMessageAsync(message, "scan_queue");
 
-        // 4. Kullanıcıya hemen cevap dön (Bekletmek yok!)
-        return Ok(new 
-        { 
-            message = "Tarama isteği alındı ve kuyruğa eklendi.", 
-            target = request.TargetUrl 
-        });
+        return Ok(new { message = "Tarama isteği alındı ve kuyruğa eklendi.", target = request.TargetUrl });
+    }
+
+    // YENİ EKLENEN KISIM: Geçmiş taramaları listeleme (GET)
+    [HttpGet("history")]
+    public async Task<IActionResult> GetScanHistory()
+    {
+        // Veritabanındaki "ScanRecords" tablosunu tarihe göre (en yeni en üstte) sıralayıp getiriyoruz
+        var history = await _dbContext.ScanRecords
+            .OrderByDescending(x => x.RequestedAt)
+            .ToListAsync();
+
+        return Ok(history);
     }
 }
