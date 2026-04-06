@@ -77,6 +77,8 @@ Proje, kurumsal bir ürün yaşam döngüsü simüle edilerek fazlar halinde gel
 
 Proje tamamen Dockerize edilmiştir. Tek komutla ayağa kaldırılabilir.
 
+> Not: Bu repoda `docker-compose.yml` dosyası bulunmuyorsa aşağıdaki Docker adımını atlayıp .NET ile yerel çalıştırma adımlarını kullanın.
+
 ### Gereksinimler
 * Docker Desktop
 * .NET 8/9 SDK (Geliştirme için)
@@ -97,6 +99,113 @@ Proje tamamen Dockerize edilmiştir. Tek komutla ayağa kaldırılabilir.
 3.  **Erişim:**
     * **API (Swagger):** `http://localhost:5075/swagger` (Port değişebilir)
     * **Veritabanı:** `localhost:5432`
+
+### Docker yoksa yerel çalıştırma
+
+```bash
+cd src/backend-core
+dotnet restore
+dotnet build
+dotnet run --project CtiHub.WebApi/CtiHub.WebApi.csproj
+```
+
+---
+
+## 🔌 API Kullanım Örnekleri
+
+Base URL (local): `http://localhost:5075`
+
+### 1) Kullanıcı kaydı
+
+- Endpoint: `POST /api/users`
+- Auth: Gerekmez (`AllowAnonymous`)
+
+```bash
+curl -X POST http://localhost:5075/api/users \
+    -H "Content-Type: application/json" \
+    -d '{
+        "username": "recep",
+        "email": "recep@example.com",
+        "password": "123456",
+        "firstName": "Recep",
+        "lastName": "Yilmaz"
+    }'
+```
+
+Örnek cevap:
+
+```json
+{
+    "message": "Kullanıcı başarıyla oluşturuldu",
+    "userId": "b8e2a66f-9d33-4a71-9d1c-1b3d9fce0d15"
+}
+```
+
+### 2) Giriş (JWT token alma)
+
+- Endpoint: `POST /api/auth/login`
+- Auth: Gerekmez
+
+```bash
+curl -X POST http://localhost:5075/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "recep@example.com",
+        "password": "123456"
+    }'
+```
+
+Örnek cevap:
+
+```json
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "message": "Giriş başarılı!"
+}
+```
+
+### 3) Tüm kullanıcıları listele
+
+- Endpoint: `GET /api/users`
+- Auth: Gerekir (`Authorization: Bearer <token>`)
+
+```bash
+curl -X GET http://localhost:5075/api/users \
+    -H "Authorization: Bearer <token>"
+```
+
+### 4) Tarama başlat
+
+- Endpoint: `POST /api/scan/start-scan`
+- Auth: Gerekir (`Authorization: Bearer <token>`)
+
+```bash
+curl -X POST http://localhost:5075/api/scan/start-scan \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <token>" \
+    -d '{
+        "targetUrl": "google.com"
+    }'
+```
+
+Örnek cevap:
+
+```json
+{
+    "message": "Tarama isteği alındı ve kuyruğa eklendi.",
+    "target": "google.com"
+}
+```
+
+### 5) Tarama geçmişi
+
+- Endpoint: `GET /api/scan/history`
+- Auth: Gerekir (`Authorization: Bearer <token>`)
+
+```bash
+curl -X GET http://localhost:5075/api/scan/history \
+    -H "Authorization: Bearer <token>"
+```
 
 ---
 
