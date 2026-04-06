@@ -1,4 +1,5 @@
 using CtiHub.Infrastructure; // Bunu unutma
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -12,8 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 // --- 1. SERVİS KAYITLARI (Dependency Injection) ---
 
 // Controller ve Validasyon
-builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
+builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>();
+builder.Services.AddHealthChecks();
 
 // CORS Politikasını ekliyoruz (Şimdilik her yerden gelen isteklere izin veriyoruz)
 builder.Services.AddCors(options =>
@@ -32,6 +36,12 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // JWT Ayarları
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"];
+if (string.IsNullOrWhiteSpace(secretKey))
+{
+    throw new InvalidOperationException("JwtSettings:SecretKey konfigurasyonu zorunludur.");
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -43,7 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
         };
     });
 
@@ -65,13 +75,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-// --- DEBUG KODU BAŞLANGICI ---
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"\n\n---------------------------------------------------------");
-Console.WriteLine($" UYGULAMANIN GÖRDÜĞÜ BAĞLANTI ADRESİ: \n{connectionString}");
-Console.WriteLine($"---------------------------------------------------------\n\n");
-// --- DEBUG KODU BİTİŞİ ---
-
 var app = builder.Build();
 
 // --- 2. MIDDLEWARE (Boru Hattı) ---
@@ -90,6 +93,7 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 // --- 3. AUTO MIGRATION ---
 using (var scope = app.Services.CreateScope())
