@@ -1,4 +1,5 @@
 using CtiHub.Infrastructure; // Bunu unutma
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -12,8 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 // --- 1. SERVİS KAYITLARI (Dependency Injection) ---
 
 // Controller ve Validasyon
-builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
+builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>();
 
 // CORS Politikasını ekliyoruz (Şimdilik her yerden gelen isteklere izin veriyoruz)
 builder.Services.AddCors(options =>
