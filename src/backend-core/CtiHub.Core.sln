@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtiHub.Infrastructure", "Ct
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtiHub.WebApi", "CtiHub.WebApi\CtiHub.WebApi.csproj", "{BCEF1578-8921-425F-B775-80ED778F4C2F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtiHub.Tests", "CtiHub.Tests\CtiHub.Tests.csproj", "{10FC3050-332A-48F4-8273-F5CA2787ECFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{BCEF1578-8921-425F-B775-80ED778F4C2F}.Release|x64.Build.0 = Release|Any CPU
 		{BCEF1578-8921-425F-B775-80ED778F4C2F}.Release|x86.ActiveCfg = Release|Any CPU
 		{BCEF1578-8921-425F-B775-80ED778F4C2F}.Release|x86.Build.0 = Release|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Debug|x64.Build.0 = Debug|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Debug|x86.Build.0 = Debug|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Release|x64.ActiveCfg = Release|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Release|x64.Build.0 = Release|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Release|x86.ActiveCfg = Release|Any CPU
+		{10FC3050-332A-48F4-8273-F5CA2787ECFC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

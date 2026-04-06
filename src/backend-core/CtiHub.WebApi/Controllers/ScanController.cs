@@ -1,6 +1,7 @@
 using CtiHub.Application.Common.Interfaces;
 using CtiHub.Application.DTOs;
 using CtiHub.Infrastructure.Persistence; // Veritabanı bağlantısı için eklendi
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace CtiHub.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class ScanController : ControllerBase
 {
     private readonly IRabbitMqService _rabbitMqService;
