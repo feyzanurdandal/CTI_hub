@@ -15,12 +15,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CtiHub.Application.Validators.CreateUserDtoValidator>());
 
-// CORS Politikasını ekliyoruz (Şimdilik her yerden gelen isteklere izin veriyoruz)
+const string corsPolicyName = "AppCorsPolicy";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy(corsPolicyName, policy =>
     {
-        policy.AllowAnyOrigin()
+        if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+        {
+            policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+            return;
+        }
+
+        if (allowedOrigins.Length == 0)
+        {
+            throw new InvalidOperationException("Cors:AllowedOrigins konfigurasyonu production ortaminda zorunludur.");
+        }
+
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -85,7 +100,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // CORS politikasını aktif et (Mutlaka UseAuthorization'dan önce olmalı!)
-app.UseCors("AllowAll");
+app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
